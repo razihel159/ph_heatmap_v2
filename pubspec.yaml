@@ -1,0 +1,32 @@
+name: polygon_project
+description: "A new Flutter project for PH Heatmap."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  # Mga kailangan para sa Mapa
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  http: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+
+  # Registering your asset folders
+  assets:
+    - assets/regions_lowres/
+    - assets/provdists_lowres/
+    - assets/municties_lowres/
+    - assets/barangays_lowres/
+    - assets/country_lowres/
