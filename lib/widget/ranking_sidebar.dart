@@ -5,11 +5,13 @@ import '../utils/map_helpers.dart';
 class RankingSidebar extends StatelessWidget {
   final List<TappablePolygon> polygons;
   final bool isLoading;
+  final Function(TappablePolygon) onAreaTap;
 
   const RankingSidebar({
     super.key,
     required this.polygons,
     required this.isLoading,
+    required this.onAreaTap,
   });
 
   @override
@@ -26,20 +28,14 @@ class RankingSidebar extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 10,
-              spreadRadius: 2,
-            ),
-          ],
+          boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 10)],
         ),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: Text(
-                'AREAS LOADED: ${polygons.length}',
+                'RANKING (${polygons.length})',
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
               ),
             ),
@@ -53,6 +49,7 @@ class RankingSidebar extends StatelessWidget {
                         final p = sortedPolygons[index];
                         return ListTile(
                           dense: true,
+                          onTap: () => onAreaTap(p),
                           title: Text(
                             MapHelpers.formatAreaName(p.areaName),
                             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),

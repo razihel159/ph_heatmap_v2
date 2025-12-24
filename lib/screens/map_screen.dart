@@ -24,7 +24,9 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
-    _startLoading(DrillDownController.getFolderByLevel('region'), 'region');
+    Future.delayed(const Duration(milliseconds: 500), () {
+      _startLoading(DrillDownController.getFolderByLevel('region'), 'region');
+    });
   }
 
   void _handlePolygonTap(TappablePolygon area) {
@@ -42,7 +44,7 @@ class _MapScreenState extends State<MapScreen> {
       isLoading = true;
       currentLevel = level;
     });
-    _loaderSubscription = MapService.loadPolygonsStream(path).listen(
+    _loaderSubscription = MapService.loadPolygonsStream(path, level).listen(
       (updatedPolygons) {
         if (mounted) setState(() => polygons = updatedPolygons);
       },
@@ -79,13 +81,12 @@ class _MapScreenState extends State<MapScreen> {
           RankingSidebar(
             polygons: polygons,
             isLoading: isLoading,
+            onAreaTap: (area) {
+              _mapController.move(area.points[0], _mapController.camera.zoom);
+            },
           ),
           if (isLoading)
-            const Positioned(
-              bottom: 20, 
-              left: 20, 
-              child: CircularProgressIndicator()
-            ),
+            const Positioned(bottom: 20, left: 20, child: CircularProgressIndicator()),
         ],
       ),
     );
