@@ -30,8 +30,14 @@ class MapService {
             final geom = f['geometry'];
             if (geom == null) continue;
 
-            String pCode = props['ADM4_PCODE'] ?? props['ADM3_PCODE'] ?? 
-                           props['ADM2_PCODE'] ?? props['ADM1_PCODE'] ?? '';
+            String pCode = '';
+            if (currentLevel.toLowerCase().contains('province')) {
+              pCode = props['adm2_psgc']?.toString() ?? props['id']?.toString() ?? '';
+            }
+            if (pCode.isEmpty) {
+              pCode = props['ADM4_PCODE'] ?? props['ADM3_PCODE'] ?? 
+                      props['ADM2_PCODE'] ?? props['ADM1_PCODE'] ?? '';
+            }
 
             String name = props['NAME_4'] ?? props['NAME_3'] ?? 
                           props['NAME_2'] ?? props['NAME_1'] ?? 
