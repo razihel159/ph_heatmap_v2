@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:latlong2/latlong.dart';
-
-// INAYOS NA IMPORT: Mula sa 'models' folder, aakyat sa 'lib', tapos papasok sa 'logic'
-import '../logic/drill_down_controller.dart'; 
+import '../logic/drill_down_controller.dart';
 
 class TappablePolygon {
   final String id;
@@ -23,14 +21,10 @@ class TappablePolygon {
 }
 
 class LayerControlPanel extends StatelessWidget {
-  final Function(String folder, String level) onSelect;
+  final Function(String path, String level) onSelect;
   final String currentLevel;
 
-  const LayerControlPanel({
-    super.key, 
-    required this.onSelect, 
-    required this.currentLevel
-  });
+  const LayerControlPanel({super.key, required this.onSelect, required this.currentLevel});
 
   @override
   Widget build(BuildContext context) {
@@ -43,80 +37,30 @@ class LayerControlPanel extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.9),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            )
-          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(left: 10, bottom: 10),
-              child: Text(
-                "MAP LAYERS",
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: Colors.blueGrey,
-                ),
-              ),
-            ),
-            _buildLayerItem("Regions", "region", Icons.map, Colors.blue),
-            _buildLayerItem("Provinces", "province", Icons.location_city, Colors.green),
-            _buildLayerItem("Municipalities", "municity", Icons.business, Colors.orange),
-            _buildLayerItem("Barangays", "barangay", Icons.home, Colors.red),
+            _buildItem("Regions", "region", Icons.map),
+            _buildItem("Provinces", "province", Icons.location_city),
+            _buildItem("Municipalities", "municity", Icons.business),
+            _buildItem("Barangays", "barangay", Icons.home),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildLayerItem(String title, String level, IconData icon, Color color) {
+  Widget _buildItem(String title, String level, IconData icon) {
     bool isActive = currentLevel == level;
-    return GestureDetector(
+    return ListTile(
+      leading: Icon(icon, color: isActive ? Colors.blue : Colors.grey),
+      title: Text(title, style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.normal)),
       onTap: () {
-        // Tinatawag ang DrillDownController gamit ang tamang import
-        String folderPath = DrillDownController.getFolderByLevel(level);
-        onSelect(folderPath, level);
+        // PAGGAMIT NG CONTROLLER PARA SA PATH
+        String path = DrillDownController.getFolderByLevel(level);
+        onSelect(path, level);
       },
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 5),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isActive ? color.withOpacity(0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isActive ? color : Colors.transparent,
-            width: 1.5,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon, 
-              color: isActive ? color : Colors.grey.shade600,
-              size: 20,
-            ),
-            const SizedBox(width: 15),
-            Text(
-              title, 
-              style: TextStyle(
-                fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                color: isActive ? color : Colors.black87,
-                fontSize: 14,
-              )
-            ),
-            const Spacer(),
-            if (isActive)
-              Icon(Icons.check_circle, color: color, size: 16),
-          ],
-        ),
-      ),
     );
   }
 }

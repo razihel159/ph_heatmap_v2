@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import '../services/map_service.dart';
 import '../models/tappable_polygon.dart';
 import '../widget/heatmap_viewer.dart';
+import 'dart:async';
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key});
@@ -16,25 +16,39 @@ class _MapScreenState extends State<MapScreen> {
   final MapController _mapController = MapController();
   List<TappablePolygon> polygons = [];
   bool isLoading = false;
-  String currentLevel = 'country';
+  String currentLevel = 'region';
+  StreamSubscription? _loaderSubscription;
 
   @override
   void initState() {
     super.initState();
-    _loadData('country_lowres/', 'country');
+    // Pag-load ng initial regions file
+    _startLoading('regions.0.001.json', 'region');
   }
 
-  Future<void> _loadData(String folder, String level) async {
-    setState(() => isLoading = true);
-    
-    // Automatic loading base sa folder na binigay ng button/controller
-    final data = await MapService.loadPolygonsForLayer(folder);
+  void _startLoading(String path, String level) {
+    _loaderSubscription?.cancel();
     
     setState(() {
-      polygons = data;
+      polygons = []; 
+      isLoading = true;
       currentLevel = level;
-      isLoading = false;
     });
+
+    _loaderSubscription = MapService.loadPolygonsStream(path).listen(
+      (updatedPolygons) {
+        setState(() {
+          polygons = updatedPolygons;
+        });
+      },
+      onDone: () => setState(() => isLoading = false),
+    );
+  }
+
+  @override
+  void dispose() {
+    _loaderSubscription?.cancel();
+    super.dispose();
   }
 
   @override
@@ -45,17 +59,32 @@ class _MapScreenState extends State<MapScreen> {
           HeatmapViewer(
             polygons: polygons,
             mapController: _mapController,
+            borderWidth: 1.0, // Pinanatiling 1.0 para laging may border
             onPolygonTap: (area) => print("Selected: ${area.areaName}"),
           ),
-          
-          // Dito lalabas ang Dashboard Buttons mo
           LayerControlPanel(
             currentLevel: currentLevel,
-            onSelect: (folder, level) => _loadData(folder, level),
+            onSelect: (path, level) => _startLoading(path, level),
           ),
-
           if (isLoading)
-            const Center(child: CircularProgressIndicator()),
+            Positioned(
+              bottom: 20,
+              right: 20,
+              child: Column(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    color: Colors.black54,
+                    child: Text(
+                      "Loading ${polygons.length} areas...",
+                      style: const TextStyle(color: Colors.white, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

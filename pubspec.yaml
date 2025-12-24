@@ -23,10 +23,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # Registering your asset folders
+  # Registering your asset folders and specific files
   assets:
-    - assets/regions_lowres/
-    - assets/provdists_lowres/
-    - assets/municties_lowres/
-    - assets/barangays_lowres/
-    - assets/country_lowres/
+    - assets/regions.0.001.json     # Ang bagong iisang file para sa Regions
+    - assets/provdists_lowres/      # Folder para sa mga probinsya
+    - assets/municties_lowres/      # Folder para sa mga munisipyo
+    - assets/barangays_lowres/      # Folder para sa mga barangay
