@@ -14,6 +14,9 @@ class RankingSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedPolygons = List<TappablePolygon>.from(polygons);
+    sortedPolygons.sort((a, b) => b.userCount.compareTo(a.userCount));
+
     return Positioned(
       right: 15,
       top: 15,
@@ -42,12 +45,12 @@ class RankingSidebar extends StatelessWidget {
             ),
             const Divider(height: 1),
             Expanded(
-              child: isLoading
+              child: isLoading && sortedPolygons.isEmpty
                   ? const Center(child: CircularProgressIndicator())
                   : ListView.builder(
-                      itemCount: polygons.length,
+                      itemCount: sortedPolygons.length,
                       itemBuilder: (context, index) {
-                        final p = polygons[index];
+                        final p = sortedPolygons[index];
                         return ListTile(
                           dense: true,
                           title: Text(

@@ -1,41 +1,40 @@
-// lib/services/map_service.dart
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:flutter/material.dart';
 import '../models/tappable_polygon.dart';
+import '../utils/map_helpers.dart';
+import './data_service.dart';
 
 class MapService {
   static AssetManifest? _cachedManifest;
 
   static Stream<List<TappablePolygon>> loadPolygonsStream(String inputPath) async* {
     List<TappablePolygon> allPolygons = [];
-    
     try {
       _cachedManifest ??= await AssetManifest.loadFromAssetBundle(rootBundle);
-      
-      var files = _cachedManifest!.listAssets()
-          .where((path) => path.contains(inputPath) && path.endsWith('.json'))
-          .toList();
+      var allAssets = _cachedManifest!.listAssets();
+      List<String> files;
+
+      if (inputPath.isEmpty) {
+        files = allAssets.where((path) => path.contains('regions') && path.endsWith('.json')).toList();
+      } else {
+        files = allAssets.where((path) => path.contains(inputPath) && path.endsWith('.json')).toList();
+      }
 
       for (var path in files) {
-        // ETO ANG PINAKA-IMPORTANTE:
-        // Pinapatakbo nito ang UI thread para hindi mag-white screen ang Chrome.
-        await Future.delayed(Duration.zero); 
-
+        await Future.delayed(const Duration(milliseconds: 5)); 
         final String response = await rootBundle.loadString(path);
         final data = json.decode(response);
-        
         if (data['features'] != null) {
           for (var f in data['features']) {
             final props = f['properties'];
             final geom = f['geometry'];
             if (geom == null) continue;
-
-            // Simple property mapping
-            String pCode = props['ADM3_PCODE'] ?? props['ADM2_PCODE'] ?? props['ADM1_PCODE'] ?? '';
-            String name = props['NAME_3'] ?? props['NAME_2'] ?? props['NAME_1'] ?? 'Unknown';
-
+            String pCode = props['ADM4_PCODE'] ?? props['ADM3_PCODE'] ?? props['ADM2_PCODE'] ?? props['ADM1_PCODE'] ?? '';
+            String name = props['NAME_4'] ?? props['NAME_3'] ?? props['NAME_2'] ?? props['NAME_1'] ?? 'Unknown';
+            int count = DataService.getUserCountForArea(pCode);
+            Color heatmapColor = MapHelpers.getHeatmapColor(count);
             List<List<LatLng>> multiPoints = [];
             if (geom['type'] == 'Polygon') {
               var coords = geom['coordinates'][0];
@@ -47,21 +46,22 @@ class MapService {
                 }
               }
             }
-
-            allPolygons.add(TappablePolygon(
-              id: pCode, 
-              areaName: name,
-              userCount: 0,
-              points: multiPoints.isNotEmpty ? multiPoints[0] : [],
-              multiPoints: multiPoints,
-              color: Colors.blue.withOpacity(0.3),
-            ));
+            if (multiPoints.isNotEmpty) {
+              allPolygons.add(TappablePolygon(
+                id: pCode, 
+                areaName: name,
+                userCount: count,
+                points: multiPoints[0],
+                multiPoints: multiPoints,
+                color: heatmapColor,
+              ));
+            }
           }
           yield List.from(allPolygons);
         }
       }
     } catch (e) {
-      debugPrint("Error loading: $e");
+      debugPrint("Error: $e");
     }
   }
 }

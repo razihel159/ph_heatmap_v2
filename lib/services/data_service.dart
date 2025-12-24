@@ -1,21 +1,21 @@
 import 'dart:math';
 
 class DataService {
-  static const int totalPHUsers = 50000;
+  static const int totalPHUsers = 3000; 
 
   static int getUserCountForArea(String pCode) {
-    if (pCode == '0' || pCode.isEmpty) return 0;
-
+    if (pCode.isEmpty) return 0;
     final int seed = pCode.hashCode;
     final random = Random(seed);
-    final double weight = random.nextDouble(); 
-
-    if (pCode.length <= 6) {
-      return (totalPHUsers * weight * 0.15).toInt();
-    } else if (pCode.length <= 9) { 
-      return (totalPHUsers * weight * 0.02).toInt();
-    } else { 
-      return (totalPHUsers * weight * 0.001).toInt();
+    
+    if (pCode.length <= 5) {
+      return (totalPHUsers * (0.1 + random.nextDouble() * 0.2)).toInt();
+    } else if (pCode.length <= 7) {
+      return (totalPHUsers * (0.02 + random.nextDouble() * 0.05)).toInt();
+    } else if (pCode.length <= 10) {
+      return (totalPHUsers * (0.005 + random.nextDouble() * 0.01)).toInt();
+    } else {
+      return (random.nextInt(50));
     }
   }
 }
